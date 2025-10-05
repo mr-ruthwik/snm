@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animated-content {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="flash-message">
+    <center style="color: rgb(224, 207, 245);">{{ message }}</center>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<body class="bg-gray-950 text-white min-h-screen">
+
+    <div class="animated-content p-4 md:p-8">
+
+        <nav class="bg-gray-900 rounded-2xl shadow-xl p-4 flex flex-col md:flex-row items-center justify-between mb-8">
+
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <div class="relative group">
+                    <button id="notes-dropdown-btn"
+                        class="bg-gray-800 text-white px-5 py-2 rounded-xl flex items-center hover:bg-gray-700 transition-colors duration-300">
+                        Notes
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <ul id="notes-dropdown-menu"
+                        class="absolute hidden top-12 left-0 bg-gray-800 text-white rounded-xl shadow-lg z-10 w-48 py-2">
+                        <li><a href="{{url_for('showaddnotes')}}" id="add-notes-btn"
+                                class="block px-4 py-2 hover:bg-gray-700 transition-colors duration-300">Add notes</a>
+                        </li>
+                        <li><a href="{{url_for('viewallnotes')}}" id="view-all-notes-btn"
+                                class="block px-4 py-2 hover:bg-gray-700 transition-colors duration-300">View all
+                                notes</a></li>
+                        <li><a href="{{url_for('getexceldata')}}"
+                                class="block px-4 py-2 hover:bg-gray-700 transition-colors duration-300">Get Excel</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="relative group">
+                    <button id="files-dropdown-btn"
+                        class="bg-gray-800 text-white px-5 py-2 rounded-xl flex items-center hover:bg-gray-700 transition-colors duration-300">
+                        Files
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <ul id="files-dropdown-menu"
+                        class="absolute hidden top-12 left-0 bg-gray-800 text-white rounded-xl shadow-lg z-10 w-48 py-2">
+                        <li><a href="{{url_for('showuploadfiles')}}" id="upload-files-btn"
+                                class="block px-4 py-2 hover:bg-gray-700 transition-colors duration-300">Upload
+                                files</a></li>
+                        <li><a href="{{url_for('viewallfiles')}}" id="view-all-files-btn"
+                                class="block px-4 py-2 hover:bg-gray-700 transition-colors duration-300">View all
+                                files</a></li>
+                    </ul>
+                </div>
+            </div>
+            {{session.get('user')}}
+            <div class="flex items-center space-x-4">
+                <form action="{{url_for('search_all')}}" method="POST" class="flex items-center space-x-2">
+                    <input type="text" name="sdata" placeholder="Search notes, files..."
+                        class="bg-gray-800 text-white px-5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-300">
+                    <button type="submit"
+                        class="bg-gray-700 text-white px-5 py-2 rounded-xl hover:bg-gray-600 transition-colors duration-300">
+                        Search
+                    </button>
+                </form>
+                <a href="{{url_for('userlogout')}}"
+                    class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-red-600 transition-colors duration-300">
+                    Logout
+                </a>
+            </div>
+        </nav>
+
+        <main class="bg-gray-900 p-8 rounded-2xl shadow-xl min-h-[50vh]">
+            {% if viewing_addnotes %}
+            <div id="add-notes-section">
+                <div class="note-container max-w-lg mx-auto">
+                    <h2 class="text-3xl font-bold text-center text-white mb-6">Add New Note</h2>
+                    <form action="{{url_for('addnotes')}}" method="POST">
+                        <label for="note-title" class="block text-gray-400 text-sm font-medium mb-2">Title</label>
+                        <input type="text" id="note-title" name="note-title" required
+                            class="w-full px-4 py-3 bg-gray-700 text-white border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-300">
+
+                        <label for="note-description"
+                            class="block text-gray-400 text-sm font-medium mb-2">Description</label>
+                        <textarea id="note-description" name="note-description" rows="8"
+                            placeholder="Write your notes here..." required
+                            class="w-full px-4 py-3 bg-gray-700 text-white border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-300"></textarea>
+
+                        <button type="submit"
+                            class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition-colors duration-300">
+                            Add Note
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% elif all_notesdata and not notes_results and not files_results %}
+            <div id="view-all-notes-section">
+                <h2 class="text-3xl font-bold text-white mb-6">All Notes</h2>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Notes ID</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Title</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Created</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            {% for i in all_notesdata %}
+                            <tr class="hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{i[0]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[1]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[3]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{url_for('viewnotes',nid=i[0])}}"
+                                        class="text-teal-400 hover:text-teal-500 mr-4">View</a>
+                                    <a href="{{url_for('updatenotes',nid=i[0])}}"
+                                        class="text-yellow-400 hover:text-yellow-500 mr-4">Update</a>
+                                    <a href="{{url_for('deletenotes',nid=i[0])}}"
+                                        class="text-red-400 hover:text-red-500">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% elif viewing_uploadfiles %}
+            <div id="upload-files-section">
+                <div class="note-container max-w-lg mx-auto">
+                    <h2 class="text-3xl font-bold text-center text-white mb-6">Upload File</h2>
+                    <form action="{{url_for('uploadfile')}}" method="POST" enctype="multipart/form-data">
+                        <label for="file-upload" class="block text-gray-400 text-sm font-medium mb-2">Choose
+                            File</label>
+                        <input type="file" id="file-upload" name="file-upload" required
+                            class="w-full px-4 py-3 bg-gray-700 text-white border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-300">
+
+                        <button type="submit"
+                            class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition-colors duration-300 mt-4">
+                            Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% elif viewing_files and not notes_results and not files_results %}
+            <div id="view-all-files-section">
+                <h2 class="text-3xl font-bold text-white mb-6">All Files</h2>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    File ID</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    File Name</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Created</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            {% for i in all_filesdata %}
+                            <tr class="hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{i[0]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[1]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[2]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{url_for('viewfile',fid=i[0])}}"
+                                        class="text-teal-400 hover:text-teal-500 mr-4">View</a>
+                                    <a href="{{url_for('downloadfile',fid=i[0])}}"
+                                        class="text-green-400 hover:text-green-500 mr-4">Download</a>
+                                    <a href="{{url_for('deletefile',fid=i[0])}}"
+                                        class="text-red-400 hover:text-red-500">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% elif notes_results or files_results %}
+            <div id="search-results-section" class="mt-8">
+                <h2 class="text-3xl font-bold text-white mb-6">Search Results for "{{ search_term }}"</h2>
+                {% if notes_results %}
+                <h3 class="text-2xl font-bold text-white mb-4">Notes</h3>
+                <div class="overflow-x-auto rounded-lg shadow-md mb-8">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Notes ID</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Title</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Created</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            {% for i in notes_results %}
+                            <tr class="hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{i[0]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[1]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[3]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{url_for('viewnotes', nid=i[0])}}"
+                                        class="text-teal-400 hover:text-teal-500 mr-4">View</a>
+                                    <a href="{{url_for('updatenotes', nid=i[0])}}"
+                                        class="text-yellow-400 hover:text-yellow-500 mr-4">Update</a>
+                                    <a href="{{url_for('deletenotes', nid=i[0])}}"
+                                        class="text-red-400 hover:text-red-500">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                {% if files_results %}
+                <h3 class="text-2xl font-bold text-white mb-4">Files</h3>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    File ID</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    File Name</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Created</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            {% for i in files_results %}
+                            <tr class="hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{i[0]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[1]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{i[2]}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{url_for('viewfile', fid=i[0])}}"
+                                        class="text-teal-400 hover:text-teal-500 mr-4">View</a>
+                                    <a href="{{url_for('downloadfile', fid=i[0])}}"
+                                        class="text-green-400 hover:text-green-500 mr-4">Download</a>
+                                    <a href="{{url_for('deletefile', fid=i[0])}}"
+                                        class="text-red-400 hover:text-red-500">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            {% elif viewing_image_content %}
+            <div id="view-image-section" class="flex flex-col items-center">
+                <h2 class="text-3xl font-bold text-white mb-6">Viewing Image: {{ file_name }}</h2>
+                <img src="{{ url_for('serve_file_data', fid=fid) }}" alt="{{ file_name }}"
+                    class="max-w-full h-auto rounded-lg shadow-md mb-4" />
+                <a href="{{ url_for('downloadfile', fid=fid) }}"
+                    class="bg-green-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-600 transition-colors duration-300">Download
+                    Image</a>
+            </div>
+            {% elif viewing_file_content %}
+            <div id="view-file-section">
+                <h2 class="text-3xl font-bold text-white mb-6">Viewing File: {{ file_name }}</h2>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                    <pre class="whitespace-pre-wrap text-gray-300">{{ file_content }}</pre>
+                </div>
+            </div>
+            {% else %}
+            <div id="welcome-message" class="flex flex-col items-center justify-center min-h-[50vh]">
+                <h2 class="text-4xl font-extrabold text-white mb-4">Welcome to your Dashboard</h2>
+                <p class="text-gray-400 text-lg text-center">Use the navigation bar above to manage your notes and files.</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const notesDropdownBtn = document.getElementById('notes-dropdown-btn');
+            const filesDropdownBtn = document.getElementById('files-dropdown-btn');
+            const notesMenu = document.getElementById('notes-dropdown-menu');
+            const filesMenu = document.getElementById('files-dropdown-menu');
+
+            function closeAllDropdowns() {
+                notesMenu.classList.add('hidden');
+                filesMenu.classList.add('hidden');
+            }
+
+            document.addEventListener('click', function (event) {
+                if (notesDropdownBtn.contains(event.target)) {
+                    notesMenu.classList.toggle('hidden');
+                    filesMenu.classList.add('hidden');
+                } else if (filesDropdownBtn.contains(event.target)) {
+                    filesMenu.classList.toggle('hidden');
+                    notesMenu.classList.add('hidden');
+                } else {
+                    closeAllDropdowns();
+                }
+            });
+
+            // Auto-hide flash messages
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000); // 3 seconds
+            });
+        });
+    </script>
+</body>
+
+</html>
