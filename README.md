@@ -17,17 +17,3 @@ Simple Notes Management is a secure, efficient web application built with Flask 
 *   **Database**: MySQL
 *   **Frontend**: HTML5, Tailwind CSS
 *   **Utilities**: `itsdangerous` (token generation), `flask-excel` (data export), `smtplib` (email notifications)
-
-## Installation
-
-1.  **Clone the repository.**
-2.  **Install dependencies**:
-```bash
-    pip install Flask Flask-Excel mysql-connector-python itsdangerous
-    ```
-3.  **Configure Database**: Update the MySQL connection details in `app.py`.
-4.  **Run the application**:
-```bash
-    python app.py
-    ```
-
