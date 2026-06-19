@@ -30,3 +30,4 @@ Simple Notes Management is a secure, efficient web application built with Flask 
 ```bash
     python app.py
     ```
+
